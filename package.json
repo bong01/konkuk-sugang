@@ -1,0 +1,23 @@
+{
+  "name": "konkuk-sugang",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bong01/konkuk-sugang.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bong01/konkuk-sugang/issues"
+  },
+  "homepage": "https://github.com/bong01/konkuk-sugang#readme",
+  "dependencies": {
+    "express": "^4.17.2",
+    "node-fetch": "^3.2.0"
+  }
+}
