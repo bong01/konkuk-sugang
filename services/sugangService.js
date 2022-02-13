@@ -191,8 +191,15 @@ exports.getMySubjectList = async function (mySubjectList) {
                     return await findBySubjectId(subjectId);
                 }))
             });
+        if (result.includes(undefined)) {
+            throw "invalid subjectId";
+        }
         return result;
     } catch (e) {
+        if (e == "invalid subjectId") {
+            logger.error(e);
+            throw "error";
+        }
         logger.error(e.stack);
         throw "error";
     }
