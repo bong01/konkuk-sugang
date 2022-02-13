@@ -1,3 +1,4 @@
+const { logger } = require('../config/winston.js');
 const Subject = require('../models/subject.js');
 const secrets = require('../secrets.json');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
@@ -78,7 +79,6 @@ async function find(departmentId, type, grade) {
         "body": `Oe2Ue=%239e4ki&Le093=e%26*%08iu&AWeh_3=W%5E_zie&Hd%2Cpoi=_qw3e4&EKf8_%2F=Ajd%25md&WEh3m=ekmf3&rE%0Cje=JDow871&JKGhe8=NuMoe6&_)e7me=ne%2B3%7Cq&3kd3Nj=Qnd%40%251&_AUTH_MENU_KEY=1130420&%40d1%23ltYy=2022&%40d1%23ltShtm=B01011&%40d1%23openSust=${departmentId}&%40d1%23pobtDiv=${type}&%40d1%23sbjtId=&%40d1%23corsKorNm=&%40d1%23sprfNo=&%40d1%23argDeptFg=1&%40d1%23arglangNm=&%40d%23=%40d1%23&%40d1%23=dmParam&%40d1%23tp=dm&`,
         "method": "POST"
     }).then((res) => {
-        console.log(typeof res);
         return res.json();
     })
         .then(async (res) => {
@@ -123,7 +123,6 @@ async function findBySubjectId(subjectId) {
         "body": `Oe2Ue=%239e4ki&Le093=e%26*%08iu&AWeh_3=W%5E_zie&Hd%2Cpoi=_qw3e4&EKf8_%2F=Ajd%25md&WEh3m=ekmf3&rE%0Cje=JDow871&JKGhe8=NuMoe6&_)e7me=ne%2B3%7Cq&3kd3Nj=Qnd%40%251&_AUTH_MENU_KEY=1130420&%40d1%23ltYy=2022&%40d1%23ltShtm=B01011&%40d1%23openSust=&%40d1%23pobtDiv=&%40d1%23sbjtId=${subjectId}&%40d1%23corsKorNm=&%40d1%23sprfNo=&%40d1%23argDeptFg=1&%40d1%23arglangNm=&%40d%23=%40d1%23&%40d1%23=dmParam&%40d1%23tp=dm&`,
         "method": "POST"
     }).then((res) => {
-        console.log(typeof res);
         return res.json();
     })
         .then(async (res) => {
@@ -141,45 +140,60 @@ async function findBySubjectId(subjectId) {
                 return subject;
             })
             )
-            console.log(subjects);
         });
-    return subjects;
+    return subjects[0];
 }
 
 exports.getSubjects = async function (departmentId, type, grade) {
-    let result;
-    console.time('getSubjects');
-    await index()
-        .then(async () => await login())
-        .then(async () => {
-            result = await find(departmentId, type, grade);
-        });
-    console.timeEnd('getSubjects');
-    return result;
+    try {
+        let result;
+        await index()
+            .then(async () => await login())
+            .then(async () => {
+                result = await find(departmentId, type, grade);
+            });
+        return result;
+    } catch (e) {
+        logger.error(e.stack);
+        throw "error";
+    }
 }
 
 exports.getSubject = async function (subjectId) {
-    let result;
-    console.time('getSubject');
-    await index()
-        .then(async () => await login())
-        .then(async () => {
-            result = await findBySubjectId(subjectId);
-        });
-    console.timeEnd('getSubject');
-    return result;
+    try {
+        let result;
+        await index()
+            .then(async () => await login())
+            .then(async () => {
+                result = await findBySubjectId(subjectId);
+            });
+        if (!result) {
+            throw "invalid subjectId";
+        }
+        return result;
+    } catch (e) {
+        if (e == "invalid subjectId") {
+            logger.error(e);
+            throw "error";
+        }
+        logger.error(e.stack);
+        throw "error";
+    }
 }
 
 exports.getMySubjectList = async function (mySubjectList) {
-    let result;
-    console.time('getMySubjectList');
-    await index()
-        .then(async () => await login())
-        .then(async () => {
-            result = await Promise.all(mySubjectList.map(async (subjectId) => {
-                return await findBySubjectId(subjectId);
-            }))
-        });
-    console.timeEnd('getMySubjectList');
-    return result;
+    try {
+        let result;
+        await index()
+            .then(async () => await login())
+            .then(async () => {
+                result = await Promise.all(mySubjectList.map(async (subjectId) => {
+                    return await findBySubjectId(subjectId);
+                }))
+            });
+        return result;
+    } catch (e) {
+        logger.error(e.stack);
+        throw "error";
+    }
 }
