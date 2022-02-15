@@ -96,7 +96,6 @@ async function find(departmentId, type, grade) {
                 return subject;
             })
             ))
-            console.log(subjects);
         });
     return subjects;
 }
