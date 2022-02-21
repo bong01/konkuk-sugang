@@ -4,7 +4,7 @@ module.exports = class Subject {
             this.id = build.id;
             this.name = build.name;
             this.professor = build.professor;
-            this.room = build.room;
+            this.time = build.time;
             this.type = build.type;
             this.inwon = build.inwon;
             this.grade = build.grade;
@@ -30,8 +30,8 @@ module.exports = class Subject {
                 return this;
             }
 
-            setRoom(room) {
-                this.room = room;
+            setTime(time) {
+                this.time = time;
                 return this;
             }
 
