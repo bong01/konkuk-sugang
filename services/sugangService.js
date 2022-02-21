@@ -2,6 +2,7 @@ const { logger } = require('../config/winston.js');
 const Subject = require('../models/subject.js');
 const secrets = require('../secrets.json');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const timeTable = require('../timeTableDictionary.js').timeTable
 
 
 const singleId = secrets.single_id;
@@ -82,12 +83,24 @@ async function find(departmentId, type, grade) {
         return res.json();
     })
         .then(async (res) => {
-            subjects = (await Promise.all(res.DS_SUSTTIMETABLE.filter(subjectInfo => grade.includes(subjectInfo.OPEN_SHYR)).map(async (subjectInfo) => {
+            const periodInfoRegex = /[가-힣]\d{2}-\d{2}/g;
+            const periodRegex = /\d{2}-\d{2}/g;
+            subjects = (await Promise.all(res.DS_SUSTTIMETABLE.filter(subjectInfo => grade.includes(subjectInfo.OPEN_SHYR)).map((subjectInfo) => {
+                let timeInfo = "";
+                if (subjectInfo.ROOM_NM && periodInfoRegex.test(subjectInfo.ROOM_NM)) {
+                    let periodInfo = subjectInfo.ROOM_NM.match(periodInfoRegex);
+                    periodInfo.map(element => {
+                        timeInfo += (element.replace(periodRegex, function replaceWithTime(period) {
+                            let time = period.split('-');
+                            return timeTable[time[0]][0] + "-" + timeTable[time[1]][1];
+                        })) + " ";
+                    });
+                };
                 const subject = Subject.Builder
                     .setId(subjectInfo.SBJT_ID)
                     .setName(subjectInfo.TYPL_KOR_NM)
                     .setProfessor(subjectInfo.KOR_NM)
-                    .setRoom(subjectInfo.ROOM_NM)
+                    .setTime(timeInfo)
                     .setType(subjectInfo.POBT_DIV_NM)
                     .setInwon(subjectInfo.TLSN)
                     .setGrade(subjectInfo.OPEN_SHYR)
@@ -125,12 +138,24 @@ async function findBySubjectId(subjectId) {
         return res.json();
     })
         .then(async (res) => {
-            subjects = await Promise.all(res.DS_SUSTTIMETABLE.map(async (subjectInfo) => {
+            const periodInfoRegex = /[가-힣]\d{2}-\d{2}/g;
+            const periodRegex = /\d{2}-\d{2}/g;
+            subjects = await Promise.all(res.DS_SUSTTIMETABLE.map((subjectInfo) => {
+                let timeInfo = "";
+                if (subjectInfo.ROOM_NM && periodInfoRegex.test(subjectInfo.ROOM_NM)) {
+                    let periodInfo = subjectInfo.ROOM_NM.match(periodInfoRegex);
+                    periodInfo.map(element => {
+                        timeInfo += (element.replace(periodRegex, function replaceWithTime(period) {
+                            let time = period.split('-');
+                            return timeTable[time[0]][0] + "-" + timeTable[time[1]][1];
+                        })) + " ";
+                    });
+                };
                 const subject = Subject.Builder
                     .setId(subjectInfo.SBJT_ID)
                     .setName(subjectInfo.TYPL_KOR_NM)
                     .setProfessor(subjectInfo.KOR_NM)
-                    .setRoom(subjectInfo.ROOM_NM)
+                    .setTime(timeInfo)
                     .setType(subjectInfo.POBT_DIV_NM)
                     .setInwon(subjectInfo.TLSN)
                     .setGrade(subjectInfo.OPEN_SHYR)
